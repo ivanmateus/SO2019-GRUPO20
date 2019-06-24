@@ -9,7 +9,7 @@ all:
 	$(CC) -o black-scholes black-scholes.c rand_bm.c $(LIBS)
 	$(CC) -o black-scholes_paralelo black-scholes_paralelo.c rand_bm.c $(LIBS)
 	$(CC) -o monte-carlo monte-carlo.c rand_bm.c $(LIBS)
-	# $(CC) -o monte-carlo_paralelo monte-carlo_paralelo.c rand_bm.c $(LIBS)
+	$(CC) -o monte-carlo_paralelo monte-carlo_paralelo.c rand_bm.c $(LIBS)
 
 borwein: borwein.c
 	$(CC) -o borwein borwein.c $(LIBS)

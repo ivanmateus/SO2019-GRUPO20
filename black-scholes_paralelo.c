@@ -109,6 +109,7 @@ int main(void) {
     }
     for (int i = 0; i < NUMTHREADS; i++) {
         mpf_add(total, total, arguments[i].total);
+        mpf_clear(arguments[i].total);
     }
 
     // mean = a = total / M

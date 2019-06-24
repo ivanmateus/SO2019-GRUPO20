@@ -4,4 +4,6 @@ gauss-legendre
 gauss-legendre_paralelo
 black-scholes
 black-scholes_paralelo
+monte-carlo
+monte-carlo_paralelo
 rand
