@@ -5,23 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <time.h>
 #include "rand_bm.h"
 
-#define NUMTHREADS 12
+#define NUMTHREADS 4
 
 typedef struct {
     int fromidx, length;
+    mpf_t total;
 } thread_arg, *ptr_thread_arg;
 
 pthread_t threads[NUMTHREADS];
 thread_arg arguments[NUMTHREADS];
 
-mpf_t S, E, r, sig, T, total;
+mpf_t S, E, r, sig, T;
 mpf_t *trials;
 int M;
 
-void proccess(int index, mpf_t tmp_a, mpf_t tmp_b, mpf_t t, mpfr_t tmp_r,
+void proccess(int index, ptr_thread_arg arg, mpf_t tmp_a, mpf_t tmp_b, mpf_t t, mpfr_t tmp_r,
               struct BoxMullerState state) {
     // a = r - (sigma²)/2
     mpf_mul(tmp_a, sig, sig);
@@ -60,7 +60,7 @@ void proccess(int index, mpf_t tmp_a, mpf_t tmp_b, mpf_t t, mpfr_t tmp_r,
     mpf_cmp_ui(tmp_b, 0) > 0 ? mpf_mul(tmp_a, tmp_a, tmp_b) : mpf_mul_ui(tmp_a, tmp_a, 0);
 
     mpf_init_set(trials[index], tmp_a);
-    // mpf_add(total, total, tmp_a);
+    mpf_add(arg->total, arg->total, tmp_a);
 }
 
 void *thread_func(void *arg) {
@@ -69,37 +69,23 @@ void *thread_func(void *arg) {
 
     mpf_t t, tmp_a, tmp_b;
     mpfr_t tmp_r;
-    mpf_init(tmp_a);
-    mpf_init(tmp_b);
-    mpf_init(t);
+    mpf_inits(tmp_a, tmp_b, t, argument->total, NULL);
     mpfr_init(tmp_r);
 
     struct BoxMullerState state;
     initBoxMullerState(&state);
 
-    printf("thread\n");
-
     for (int i = argument->fromidx; i < endix; i++) {
-        proccess(i, tmp_a, tmp_b, t, tmp_r, state);
+        proccess(i, argument, tmp_a, tmp_b, t, tmp_r, state);
     }
 
-    mpf_clear(tmp_a);
-    mpf_clear(tmp_b);
-    mpf_clear(t);
+    mpf_clears(tmp_a, tmp_b, t, NULL);
     mpfr_clear(tmp_r);
 };
 
 int main(void) {
-    clock_t start, end;
-    start = clock();
-    srand(time(0));
-
-    mpf_init(S);
-    mpf_init(E);
-    mpf_init(r);
-    mpf_init(sig);
-    mpf_init(T);
-    // mpf_init_set_si(total, 0);
+    mpf_t total;
+    mpf_inits(S, E, r, sig, T, total, NULL);
 
     gmp_scanf("%Ff", &S);
     gmp_scanf("%Ff", &E);
@@ -122,16 +108,14 @@ int main(void) {
     for (int i = 0; i < NUMTHREADS; i++) {
         pthread_join(threads[i], NULL);
     }
-
-    // for (int i = 0; i < M; i++) {
-    //     proccess(i);
-    // }
+    for (int i = 0; i < NUMTHREADS; i++) {
+        mpf_add(total, total, arguments[i].total);
+    }
 
     // mean = a = total / M
-    mpf_t total, tmp_a, tmp_b;
+    mpf_t tmp_a, tmp_b;
     mpf_init(tmp_a);
     mpf_init(tmp_b);
-    mpf_init_set_ui(total, 0);
     mpf_div_ui(tmp_a, total, M);
 
     mpf_t mean, stddev, confwidth;
@@ -142,6 +126,7 @@ int main(void) {
         mpf_sub(tmp_a, trials[i], mean);
         mpf_mul(tmp_a, tmp_a, tmp_a);
         mpf_add(stddev, stddev, tmp_a);
+        gmp_printf("%d -> %Ff\n", i, trials[i]);
     }
     mpf_div_ui(stddev, stddev, M);
     mpf_sqrt(stddev, stddev);
@@ -158,9 +143,6 @@ int main(void) {
     // Printing entry variables
     gmp_printf("%Ff\n%Ff\n%Ff\n%Ff\n%Ff\n", S, E, r, sig, T);
     printf("%d\n", M);
-
-    end = clock();
-    printf("%lfs\n", ((double)(end - start)) / CLOCKS_PER_SEC);
 
     // confmin
     gmp_printf("%Ff\n", tmp_a);

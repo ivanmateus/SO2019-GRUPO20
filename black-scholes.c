@@ -4,30 +4,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <time.h>
 #include "rand_bm.h"
 
 int main(void) {
-    clock_t start, end;
-    start = clock();
-    mpf_t S, E, r, sig, T, tmp_a, tmp_b, t, total;
+    mpf_t S, E, r, sig, T, tmp_a, tmp_b, t, total, rand_num;
     mpf_t* trials;
     int M;
     mpfr_t tmp_r;
-    srand(time(0));
 
     struct BoxMullerState state;
     initBoxMullerState(&state);
 
-    mpf_init(S);
-    mpf_init(E);
-    mpf_init(r);
-    mpf_init(sig);
-    mpf_init(T);
-    mpf_init(t);
-    mpf_init(tmp_a);
-    mpf_init(tmp_b);
-    mpf_init_set_si(total, 0);
+    mpf_inits(S, E, r, sig, T, t, tmp_a, tmp_b, total, rand_num, NULL);
 
     gmp_scanf("%Ff", &S);
     gmp_scanf("%Ff", &E);
@@ -51,8 +39,7 @@ int main(void) {
 
         // a = a + b * randomNumber
         double random = boxMullerRandom(&state);
-        mpf_t rand_num;
-        mpf_init_set_d(rand_num, random);
+        mpf_set_d(rand_num, random);
         mpf_mul(tmp_b, tmp_b, rand_num);
         mpf_add(tmp_a, tmp_a, tmp_b);
 
@@ -83,13 +70,13 @@ int main(void) {
     mpf_div_ui(tmp_a, total, M);
 
     mpf_t mean, stddev, confwidth;
-    mpf_init(confwidth);
+    mpf_inits(confwidth, stddev, NULL);
     mpf_init_set(mean, tmp_a);
-    mpf_init_set_ui(stddev, 0);
     for (int i = 0; i < M; i++) {
         mpf_sub(tmp_a, trials[i], mean);
         mpf_mul(tmp_a, tmp_a, tmp_a);
         mpf_add(stddev, stddev, tmp_a);
+        mpf_clear(trials[i]);
     }
     mpf_div_ui(stddev, stddev, M);
     mpf_sqrt(stddev, stddev);
@@ -107,14 +94,13 @@ int main(void) {
     gmp_printf("%Ff\n%Ff\n%Ff\n%Ff\n%Ff\n", S, E, r, sig, T);
     printf("%d\n", M);
 
-    end = clock();
-    printf("%lfs\n", ((double)(end - start)) / CLOCKS_PER_SEC);
-
     // confmin
     gmp_printf("%Ff\n", tmp_a);
 
     // confmax
     gmp_printf("%Ff\n", tmp_b);
 
+    mpf_clears(S, E, r, sig, T, t, tmp_a, tmp_b, total, confwidth, stddev, rand_num, mean, NULL);
+    mpfr_clear(tmp_r);
     return 0;
 }
