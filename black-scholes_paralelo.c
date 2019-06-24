@@ -21,8 +21,7 @@ mpf_t S, E, r, sig, T;
 mpf_t *trials;
 int M;
 
-void proccess(int index, ptr_thread_arg arg, mpf_t tmp_a, mpf_t tmp_b, mpf_t t, mpfr_t tmp_r,
-              struct BoxMullerState state) {
+void proccess(int index, ptr_thread_arg arg, mpf_t tmp_a, mpf_t tmp_b, mpf_t t, mpfr_t tmp_r) {
     // a = r - (sigma²)/2
     mpf_mul(tmp_a, sig, sig);
     mpf_div_ui(tmp_a, tmp_a, 2);
@@ -32,6 +31,9 @@ void proccess(int index, ptr_thread_arg arg, mpf_t tmp_a, mpf_t tmp_b, mpf_t t, 
     // b = sigma * sqrt(T)
     mpf_sqrt(tmp_b, T);
     mpf_mul(tmp_b, tmp_b, sig);
+
+    struct BoxMullerState state;
+    initBoxMullerState(&state);
 
     // a = a + b * randomNumber
     double random = boxMullerRandom(&state);
@@ -72,11 +74,8 @@ void *thread_func(void *arg) {
     mpf_inits(tmp_a, tmp_b, t, argument->total, NULL);
     mpfr_init(tmp_r);
 
-    struct BoxMullerState state;
-    initBoxMullerState(&state);
-
     for (int i = argument->fromidx; i < endix; i++) {
-        proccess(i, argument, tmp_a, tmp_b, t, tmp_r, state);
+        proccess(i, argument, tmp_a, tmp_b, t, tmp_r);
     }
 
     mpf_clears(tmp_a, tmp_b, t, NULL);
@@ -126,7 +125,7 @@ int main(void) {
         mpf_sub(tmp_a, trials[i], mean);
         mpf_mul(tmp_a, tmp_a, tmp_a);
         mpf_add(stddev, stddev, tmp_a);
-        gmp_printf("%d -> %Ff\n", i, trials[i]);
+        // gmp_printf("%d -> %Ff\n", i, trials[i]);
     }
     mpf_div_ui(stddev, stddev, M);
     mpf_sqrt(stddev, stddev);
