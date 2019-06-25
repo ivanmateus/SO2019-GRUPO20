@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 #define LOG2_10 3.32192809489
-#define N 10000
+#define N 100000
 #define PREC 5000
 #define PRECBITS (int)PREC*LOG2_10
 #define BUFSIZE (int)(3*N/10)
@@ -59,10 +59,11 @@ void *thread_Y(){
       pthread_mutex_unlock(&((buf_t *)buf)->buf_lock);
       pthread_exit(0);
     }
-    while(((buf_t *)buf)->fullSp == BUFSIZE){
+    if(((buf_t *)buf)->fullSp == BUFSIZE){
       pthread_cond_wait(&((buf_t *)buf)->full, &((buf_t *)buf)->buf_lock);
     }
 
+    //y = (1-(1-y^4)^1/4)/(1-(1+y^4)^1/4)
     mpf_pow_ui(y, y, 4);
     mpf_ui_sub(y, 1, y);
     mpf_sqrt(y, y);
@@ -93,13 +94,14 @@ void *thread_A(){
         pthread_exit(0);
       }
     }
-    while(((buf_t *)buf)->fullSp == 0){
+    if(((buf_t *)buf)->fullSp == 0){
       pthread_cond_wait(&((buf_t *)buf)->empty, &((buf_t *)buf)->buf_lock);
     }
     
     mpf_t temp;
     mpf_init_set(temp, ((buf_t *)buf)->buffer[(((buf_t *)buf)->start)]);
     
+    //a = a(1+y)^4 - (2^(2n+3))y(1+y+y^2)
     mpf_add_ui(a_temp1, temp, 1);
     mpf_pow_ui(a_temp1, a_temp1, 4);
     mpf_mul(a_temp1, a_temp1, a);
@@ -141,9 +143,13 @@ int main(void){
   mpf_init(dois);
   mpf_init(pi);
 
+  //a = 2(sqrt(2) - 1)^2
   mpf_sqrt_ui(a, 2);
   mpf_sub_ui(a, a, 1);
+
+  //y = sqrt(2) - 1
   mpf_set(y, a);
+
   mpf_mul(a, a, a);
   mpf_mul_ui(a, a, 2);
   mpf_set_ui(dois, 2);
@@ -154,6 +160,7 @@ int main(void){
   pthread_join(threads[0], NULL);
   pthread_join(threads[1], NULL);
 
+  //pi = 1/a
   mpf_ui_div(pi, 1, a);
 
   gmp_printf("%.6Ff\n", pi);

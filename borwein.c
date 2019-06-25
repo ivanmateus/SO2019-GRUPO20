@@ -3,7 +3,7 @@
 #include <gmp.h>
 
 #define LOG2_10 3.32192809489
-#define N 10000
+#define N 100000
 #define PREC 5000
 #define PRECBITS (int)PREC*LOG2_10
 
@@ -28,9 +28,13 @@ int main(void){
   mpf_init(dois);
   mpf_init(pi);
 
+  //a = 2(sqrt(2) - 1)^2
   mpf_sqrt_ui(a, 2);
   mpf_sub_ui(a, a, 1);
+
+  //y = sqrt(2) - 1
   mpf_set(y, a);
+
   mpf_mul(a, a, a);
   mpf_mul_ui(a, a, 2);
   mpf_set_ui(dois, 2);
@@ -41,6 +45,7 @@ int main(void){
     mpf_set(y1, y);
     mpf_set(y2, y);
 
+    //y = (1-(1-y^4)^1/4)/(1-(1+y^4)^1/4)
     mpf_pow_ui(y, y, 4);
     mpf_ui_sub(y, 1, y);
     mpf_sqrt(y, y);
@@ -49,6 +54,7 @@ int main(void){
     mpf_add_ui(y2, y, 1);
     mpf_div(y, y1, y2);
 
+    //a = a(1+y)^4 - (2^(2n+3))y(1+y+y^2)
     mpf_add_ui(a1, y, 1);
     mpf_pow_ui(a1, a1, 4);
     mpf_mul(a1, a1, a);
@@ -62,6 +68,7 @@ int main(void){
     mpf_set_ui(dois, 2);
   }
 
+  //pi = 1/a
   mpf_ui_div(pi, 1, a);
 
   gmp_printf("%.6Ff\n", pi);
