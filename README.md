@@ -2,7 +2,7 @@
 
 ## Compilação
 
-Os códigos devem, naturalmente, serem compilados uma primeira vez antes de serem executados. Algumas bibliotecas utilizadas, como PThreads e GMP já fazem parte das bibliotecas do compilador gcc. Por esse motivo e pelo fato dele ser o compilador de C mais amplamente usado, optamos por usá-lo na compilação dos nossos códigos.
+Os códigos devem, naturalmente, ser compilados uma primeira vez antes de serem executados. Algumas bibliotecas utilizadas, como PThreads e GMP já fazem parte das bibliotecas do compilador gcc. Por esse motivo e pelo fato dele ser o compilador de C mais amplamente usado, optamos por usá-lo na compilação dos nossos códigos.
 
 Foi criado um Makefile para o auxílio da compilação, portanto, para compilar todos os códigos, basta executar o comando abaixo
 
