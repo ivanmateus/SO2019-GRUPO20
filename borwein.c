@@ -3,8 +3,8 @@
 #include <gmp.h>
 
 #define LOG2_10 3.32192809489
-#define N 100000
-#define PREC 5000
+#define N 1000000000
+#define PREC 50000
 #define PRECBITS (int)PREC*LOG2_10
 
 int main(void){
