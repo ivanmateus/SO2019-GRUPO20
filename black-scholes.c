@@ -91,14 +91,11 @@ int main(void) {
     mpf_add(tmp_b, mean, confwidth);
 
     // Printing entry variables
-    gmp_printf("%Ff\n%Ff\n%Ff\n%Ff\n%Ff\n", S, E, r, sig, T);
-    printf("%d\n", M);
+    gmp_printf("S\t%.0Ff\nE\t%.0Ff\nr\t%.0Ff\nsigma\t%.0Ff\nT\t%.0Ff\n", S, E, r, sig, T);
+    printf("M\t%d\n", M);
 
-    // confmin
-    gmp_printf("%Ff\n", tmp_a);
-
-    // confmax
-    gmp_printf("%Ff\n", tmp_b);
+    // conf
+    gmp_printf("Confidence interval: (%Ff, %Ff)\n", tmp_a, tmp_b);
 
     mpf_clears(S, E, r, sig, T, t, tmp_a, tmp_b, total, confwidth, stddev, rand_num, mean, NULL);
     mpfr_clear(tmp_r);
